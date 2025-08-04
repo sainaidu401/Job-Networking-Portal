@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../config/axios'
 import toast from 'react-hot-toast'
 
 const JobContext = createContext()
@@ -23,15 +23,12 @@ export const JobProvider = ({ children }) => {
     budget: { min: 0, max: 100000 }
   })
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('token')
-    return token ? { Authorization: `Bearer ${token}` } : {}
-  }
+
 
   const fetchJobs = async () => {
     setLoading(true)
     try {
-      const response = await axios.get('/api/jobs', { headers: getAuthHeaders() })
+      const response = await api.get('/api/jobs')
       setJobs(response.data.jobs)
     } catch (error) {
       toast.error('Failed to fetch jobs')
@@ -42,7 +39,7 @@ export const JobProvider = ({ children }) => {
 
   const fetchMyJobs = async () => {
     try {
-      const response = await axios.get('/api/jobs/my-jobs', { headers: getAuthHeaders() })
+      const response = await api.get('/api/jobs/my-jobs')
       setMyJobs(response.data.jobs)
     } catch (error) {
       toast.error('Failed to fetch your jobs')
@@ -51,7 +48,7 @@ export const JobProvider = ({ children }) => {
 
   const fetchApplications = async () => {
     try {
-      const response = await axios.get('/api/jobs/applications', { headers: getAuthHeaders() })
+      const response = await api.get('/api/jobs/applications')
       setApplications(response.data.applications)
     } catch (error) {
       toast.error('Failed to fetch applications')
@@ -60,7 +57,7 @@ export const JobProvider = ({ children }) => {
 
   const createJob = async (jobData) => {
     try {
-      const response = await axios.post('/api/jobs', jobData, { headers: getAuthHeaders() })
+      const response = await api.post('/api/jobs', jobData)
       setJobs(prev => [response.data.job, ...prev])
       setMyJobs(prev => [response.data.job, ...prev])
       toast.success('Job posted successfully!')
@@ -73,7 +70,7 @@ export const JobProvider = ({ children }) => {
 
   const applyToJob = async (jobId, applicationData) => {
     try {
-      const response = await axios.post(`/api/jobs/${jobId}/apply`, applicationData, { headers: getAuthHeaders() })
+      const response = await api.post(`/api/jobs/${jobId}/apply`, applicationData)
       setApplications(prev => [response.data.application, ...prev])
       toast.success('Application submitted successfully!')
       return response.data.application
@@ -85,7 +82,7 @@ export const JobProvider = ({ children }) => {
 
   const updateJob = async (jobId, jobData) => {
     try {
-      const response = await axios.put(`/api/jobs/${jobId}`, jobData, { headers: getAuthHeaders() })
+      const response = await api.put(`/api/jobs/${jobId}`, jobData)
       setJobs(prev => prev.map(job => job._id === jobId ? response.data.job : job))
       setMyJobs(prev => prev.map(job => job._id === jobId ? response.data.job : job))
       toast.success('Job updated successfully!')
@@ -98,7 +95,7 @@ export const JobProvider = ({ children }) => {
 
   const deleteJob = async (jobId) => {
     try {
-      await axios.delete(`/api/jobs/${jobId}`, { headers: getAuthHeaders() })
+      await api.delete(`/api/jobs/${jobId}`)
       setJobs(prev => prev.filter(job => job._id !== jobId))
       setMyJobs(prev => prev.filter(job => job._id !== jobId))
       toast.success('Job deleted successfully!')

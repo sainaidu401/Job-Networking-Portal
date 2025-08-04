@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import api from '../config/axios'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext()
@@ -24,11 +24,10 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('token')
     if (token) {
       try {
-        const response = await axios.get('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        const response = await api.get('/api/auth/me')  // ✅ Fixed
         setUser(response.data.user)
       } catch (error) {
+        console.error('Auth check error:', error)
         localStorage.removeItem('token')
       }
     }
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password })
+      const response = await api.post('/api/auth/login', { email, password }) // ✅ Fixed
       const { token, user } = response.data
       localStorage.setItem('token', token)
       setUser(user)
@@ -51,7 +50,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/api/auth/register', userData)
+      const response = await api.post('/api/auth/register', userData) // ✅ Fixed
       const { token, user } = response.data
       localStorage.setItem('token', token)
       setUser(user)
@@ -71,10 +70,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (profileData) => {
     try {
-      const token = localStorage.getItem('token')
-      const response = await axios.put('/api/auth/profile', profileData, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const response = await api.put('/api/auth/profile', profileData) // ✅ Fixed
       setUser(response.data.user)
       toast.success('Profile updated successfully!')
       return true
@@ -99,4 +95,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   )
-} 
+}

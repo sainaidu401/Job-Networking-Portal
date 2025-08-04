@@ -485,7 +485,7 @@ const JobFeed = () => {
                     </div>
 
                     {user && (
-                      <button className="w-full mt-6 bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors">
+                      <button className="w-full mt-6 bg-primary-600 text-black py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors">
                         Apply Now
                       </button>
                     )}

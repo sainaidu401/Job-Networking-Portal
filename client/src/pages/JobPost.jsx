@@ -209,7 +209,7 @@ const JobPost = () => {
           <div className="flex items-center justify-center">
             <div className={`flex items-center ${step >= 1 ? 'text-primary-600' : 'text-gray-400'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                step >= 1 ? 'border-primary-600 bg-primary-600 text-white' : 'border-gray-300'
+                step >= 1 ? 'border-primary-600 bg-primary-600 text-black' : 'border-gray-300'
               }`}>
                 1
               </div>
@@ -218,7 +218,7 @@ const JobPost = () => {
             <div className={`w-16 h-0.5 mx-4 ${step >= 2 ? 'bg-primary-600' : 'bg-gray-300'}`}></div>
             <div className={`flex items-center ${step >= 2 ? 'text-primary-600' : 'text-gray-400'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
-                step >= 2 ? 'border-primary-600 bg-primary-600 text-white' : 'border-gray-300'
+                step >= 2 ? 'border-primary-600 bg-primary-600 text-black' : 'border-gray-300'
               }`}>
                 2
               </div>
@@ -379,7 +379,7 @@ const JobPost = () => {
                   <button
                     type="button"
                     onClick={addSkill}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                    className="px-4 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -460,7 +460,7 @@ const JobPost = () => {
                     <button
                       type="button"
                       onClick={addRequirement}
-                      className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                      className="px-3 py-2 bg-gray-600 text-black rounded-lg hover:bg-gray-700"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -497,7 +497,7 @@ const JobPost = () => {
                     <button
                       type="button"
                       onClick={addBenefit}
-                      className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                      className="px-3 py-2 bg-gray-600 text-black rounded-lg hover:bg-gray-700"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
@@ -524,7 +524,7 @@ const JobPost = () => {
                   type="button"
                   onClick={() => setStep(2)}
                   disabled={!canProceed()}
-                  className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next: Payment
                 </button>
@@ -570,7 +570,7 @@ const JobPost = () => {
                 <button
                   type="submit"
                   disabled={loading || !isConnected}
-                  className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                  className="px-6 py-2 bg-primary-600 text-black rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
                   {loading ? (
                     <>

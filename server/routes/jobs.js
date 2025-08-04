@@ -1,19 +1,17 @@
-const express = require('express')
-const { body, validationResult } = require('express-validator')
-const Job = require('../models/Job')
-const User = require('../models/User')
-const auth = require('../middleware/auth')
-const natural = require('natural')
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const Job = require('../models/Job');
+const User = require('../models/User');
+const auth = require('../middleware/auth');
+const natural = require('natural');
 
-const router = express.Router()
+const router = express.Router();
 
 // Initialize NLP tools
-const tokenizer = new natural.WordTokenizer()
-const tfidf = new natural.TfIdf()
+const tokenizer = new natural.WordTokenizer();
+const tfidf = new natural.TfIdf();
 
-// @route   GET /api/jobs
-// @desc    Get all jobs with filters
-// @access  Public
+// GET /api/jobs
 router.get('/', async (req, res) => {
   try {
     const {
@@ -26,55 +24,32 @@ router.get('/', async (req, res) => {
       remote,
       minBudget,
       maxBudget,
-      search
-    } = req.query
+      search,
+    } = req.query;
 
-    const filters = {}
-    
-    // Add filters
+    const filters = { status: 'active' };
+
     if (skills) {
-      filters.skills = { $in: skills.split(',').map(s => new RegExp(s.trim(), 'i')) }
+      filters.skills = { $in: skills.split(',').map(s => new RegExp(s.trim(), 'i')) };
     }
-    
-    if (location) {
-      filters.location = new RegExp(location, 'i')
-    }
-    
-    if (experienceLevel) {
-      filters.experienceLevel = experienceLevel
-    }
-    
-    if (jobType) {
-      filters.jobType = jobType
-    }
-    
-    if (remote !== undefined) {
-      filters.remote = remote === 'true'
-    }
-    
+    if (location) filters.location = new RegExp(location, 'i');
+    if (experienceLevel) filters.experienceLevel = experienceLevel;
+    if (jobType) filters.jobType = jobType;
+    if (remote !== undefined) filters.remote = remote === 'true';
     if (minBudget || maxBudget) {
-      filters['budget.min'] = {}
-      if (minBudget) filters['budget.min'].$gte = parseFloat(minBudget)
-      if (maxBudget) filters['budget.max'].$lte = parseFloat(maxBudget)
+      filters['budget.min'] = {};
+      if (minBudget) filters['budget.min'].$gte = parseFloat(minBudget);
+      if (maxBudget) filters['budget.max'] = { $lte: parseFloat(maxBudget) };
     }
+    if (search) filters.$text = { $search: search };
 
-    // Add search functionality
-    if (search) {
-      filters.$text = { $search: search }
-    }
-
-    // Add status filter
-    filters.status = 'active'
-
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     const jobs = await Job.find(filters)
       .populate('employer', 'name location')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit))
-
-    const total = await Job.countDocuments(filters)
+      .limit(parseInt(limit));
+    const total = await Job.countDocuments(filters);
 
     res.json({
       jobs,
@@ -83,14 +58,76 @@ router.get('/', async (req, res) => {
         pages: Math.ceil(total / parseInt(limit)),
         total,
         hasNext: skip + jobs.length < total,
-        hasPrev: parseInt(page) > 1
-      }
-    })
+        hasPrev: parseInt(page) > 1,
+      },
+    });
   } catch (error) {
-    console.error('Get jobs error:', error)
-    res.status(500).json({ message: 'Server error' })
+    console.error('Get jobs error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
-})
+});
+
+router.get('/my-jobs', auth, async (req, res) => {
+  try {
+    const jobs = await Job.find({ employer: req.user.id })
+      .populate('employer', 'name location')
+      .sort({ createdAt: -1 });
+    res.json({ jobs });
+  } catch (error) {
+    console.error('Get my jobs error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/applications', auth, async (req, res) => {
+  try {
+    const jobs = await Job.find({ employer: req.user.id })
+      .populate('applications.applicant', 'name bio skills experienceLevel location')
+      .sort({ createdAt: -1 });
+    const applications = jobs.flatMap(job =>
+      job.applications.map(app => ({ ...app.toObject(), jobTitle: job.title, jobId: job._id }))
+    );
+    res.json({ applications });
+  } catch (error) {
+    console.error('Get applications error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/recommended', auth, async (req, res) => {
+  try {
+    const jobs = await Job.find({ status: 'active' })
+      .populate('employer', 'name location')
+      .sort({ createdAt: -1 });
+
+    const recommendedJobs = jobs
+      .map(job => ({ ...job.toObject(), matchScore: job.calculateMatchScore(req.user) }))
+      .filter(job => job.matchScore > 30)
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, 10);
+
+    res.json({ jobs: recommendedJobs });
+  } catch (error) {
+    console.error('Get recommended jobs error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/:id', async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.id)
+      .populate('employer', 'name location bio skills experienceLevel')
+      .populate('applications.applicant', 'name bio skills experienceLevel location');
+
+    if (!job) return res.status(404).json({ message: 'Job not found' });
+
+    await job.incrementViews();
+    res.json({ job });
+  } catch (error) {
+    console.error('Get job error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Custom routes FIRST
 router.get('/my-jobs', auth, async (req, res) => {

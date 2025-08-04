@@ -22,10 +22,12 @@ const Dashboard = () => {
   const { myJobs, applications, fetchMyJobs, fetchApplications } = useJob()
   const [activeTab, setActiveTab] = useState('overview')
 
-  useEffect(() => {
-    fetchMyJobs()
-    fetchApplications()
-  }, )
+ useEffect(() => {
+    if (user) {
+      fetchMyJobs()
+      fetchApplications()
+    }
+  }, [user])
 
   const stats = [
     {
